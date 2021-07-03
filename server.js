@@ -59,9 +59,22 @@ app.get("/",(req,res)=>{
 app.get("/login", (req,res) =>{
     res.render("login")});
 
-// app.post("/login", (req,res)=>{
-//     res.render("login_post")
-// });
+app.post("/login", async (req,res)=>{
+
+    const {email, password}  = req.body
+    // check if the user is there in the database
+    const user = await userModel.findOne({email})
+    if(!user){
+        res.redirect('/login')
+    }
+    const isMatch = await bcrytjs.compare(password,user.password)
+
+    if(!isMatch){
+        res.redirect('/login')
+    }
+    res.redirect("/dashboard")
+
+});
 
 // Register Page
 app.get("/register", (req,res)=>{res.render("register")});
@@ -85,7 +98,9 @@ app.post("/register", async (req,res) =>{
 });
 
 // Dashboard Page
-// app.get("/dashboard", isAuth, dashboard_get);
+app.get("/dashboard",(req,res)=>{
+    res.render("dashboard")
+});
 
 // app.post("/logout", logout_post);
 
