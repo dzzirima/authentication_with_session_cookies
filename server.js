@@ -1,8 +1,10 @@
 import express from 'express'
 import session from 'express-session'
 import mongoose from 'mongoose'
+import userModel from './models/User.js'
 import ejs from 'ejs'
 import MongoDBSession  from 'connect-mongodb-session'
+import bcrytjs from "bcryptjs"
 const MYsessions = MongoDBSession(session)
 
 var dbUrl = 'mongodb://localhost:27017/sessions'
@@ -63,8 +65,24 @@ app.get("/login", (req,res) =>{
 
 // Register Page
 app.get("/register", (req,res)=>{res.render("register")});
-app.post("/register", (req,res)=>{
-    res.render("register_post")});
+app.post("/register", async (req,res) =>{
+    const {username ,email, password} = req.body;
+    let user = await userModel.findOne({email})
+
+    if(user){
+        return res.redirect('/register');
+    }
+    const  hashedpswd = await bcrytjs.hash(password,10)
+    //create a  new user if doesnt exits
+    user = new userModel({
+        username,
+        email,
+        password:hashedpswd
+    })
+    await user.save()
+    return res.redirect("login")
+
+});
 
 // Dashboard Page
 // app.get("/dashboard", isAuth, dashboard_get);
