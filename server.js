@@ -32,6 +32,13 @@ app.use(session({
     store:store
 }))
 // by usig this middleware node creates a session body  called req.session
+const isAuth = (req,res,next)=>{
+    if(req.session.isAuth){
+        next()
+    }else{
+        res.redirect('/login')
+    }
+}
 
 
 mongoose.connect(dbUrl,{
@@ -43,6 +50,9 @@ mongoose.connect(dbUrl,{
 
 app.set("view engine","ejs");
 app.use(express.urlencoded({extended:true}))
+
+// using this middleware we can check the cookie that was  stored in the browser
+
 
 
 app.get("/",(req,res)=>{
@@ -83,7 +93,7 @@ app.post("/register", async (req,res) =>{
     let user = await userModel.findOne({email})
 
     if(user){
-        return res.redirect('/register');
+        return res.redirect('/login');
     }
     const  hashedpswd = await bcrytjs.hash(password,10)
     //create a  new user if doesnt exits
@@ -93,12 +103,15 @@ app.post("/register", async (req,res) =>{
         password:hashedpswd
     })
     await user.save()
+    // here set a cookie please before we respond 
+    req.session.isAuth = true
+
     return res.redirect("login")
 
 });
 
 // Dashboard Page
-app.get("/dashboard",(req,res)=>{
+app.get("/dashboard",isAuth,(req,res)=>{
     res.render("dashboard")
 });
 
