@@ -115,6 +115,11 @@ app.get("/dashboard",isAuth,(req,res)=>{
     res.render("dashboard")
 });
 
-// app.post("/logout", logout_post);
+app.post("/logout",(req,res)=>{
+    req.session.destroy((error) =>{
+        if(error) throw error
+        res.redirect("/")
+    })
+});
 
 app.listen(8000,console.log("server running on 8000"))
